@@ -1,4 +1,4 @@
-package com.orange.springup.movieretriever;
+package com.orange.springup.mediaretriever;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

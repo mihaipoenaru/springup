@@ -1,6 +1,6 @@
-package com.orange.springup.movieretriever.feign.client;
+package com.orange.springup.mediaretriever.feign.client;
 
-import com.orange.springup.movieretriever.dtos.MovieDto;
+import com.orange.springup.mediaretriever.dtos.MovieDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
