@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.Set;
 
 public abstract class Media {
+
+    public String id;
     public String title;
     public LocalDate release;
     public String description;

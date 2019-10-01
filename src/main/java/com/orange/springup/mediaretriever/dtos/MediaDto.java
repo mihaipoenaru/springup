@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class MovieDto {
+public class MediaDto {
 
     @JsonProperty("Title")
     public String title;
@@ -29,6 +29,7 @@ public class MovieDto {
     public String actors;
     @JsonProperty("Plot")
     public String plot;
+    public String totalSeasons;
     @JsonProperty("Language")
     public String language;
     @JsonProperty("Country")
