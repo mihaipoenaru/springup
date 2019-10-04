@@ -15,11 +15,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,8 +60,8 @@ public class OMDBDownloader {
         threadPool = Executors.newCachedThreadPool();
     }
 
-    private List<Media> getAllMedia() throws IOException {
-        return Files.readAllLines(Paths.get("media_list.txt"))
+    public List<Media> getAllMedia() throws IOException, URISyntaxException {
+        return Files.readAllLines(Paths.get(OMDBDownloader.class.getClassLoader().getResource("media_list.txt").toURI()))
                 .stream()
                 .map(this::searchAsync)
                 .collect(toList())
@@ -113,11 +117,15 @@ public class OMDBDownloader {
                 .collect(toList())
                 .stream()
                 .map(this::waitForResult)
-                .filter(Objects::nonNull)
+                .filter(this::notNull)
                 .collect(toMap(
                         e -> Integer.parseInt(e.seasonNumber),
                         e -> e.episodes.stream().map(this::episodeDtoToEpisode).collect(toList())
                 ));
+    }
+
+    private boolean notNull(SeasonEpisodesDto seasonEpisodesDto) {
+        return seasonEpisodesDto != null && seasonEpisodesDto.seasonNumber != null && seasonEpisodesDto.episodes != null;
     }
 
     private Episode episodeDtoToEpisode(EpisodeDto episodeDto) {
@@ -126,7 +134,11 @@ public class OMDBDownloader {
         result.name = episodeDto.title;
         result.number = Integer.parseInt(episodeDto.episodeNumber);
         result.rating = Double.parseDouble(episodeDto.rating);
-        result.release = LocalDate.parse(episodeDto.released, ISO_DATE);
+        try {
+            result.release = LocalDate.parse(episodeDto.released, ISO_DATE);
+        } catch (DateTimeParseException e) {
+            result.release = null;
+        }
 
         return result;
     }
@@ -149,10 +161,14 @@ public class OMDBDownloader {
     }
 
     private double calculateAverageRating(MediaDto mediaDto) {
-        return mediaDto.ratingDtos.stream()
+        double averageRating = mediaDto.ratingDtos.stream()
                 .mapToDouble(this::parseRating)
                 .average()
                 .orElseGet(() -> Double.parseDouble(mediaDto.imdbRating));
+        DecimalFormat formatter = new DecimalFormat("#.#");
+        formatter.setRoundingMode(RoundingMode.HALF_EVEN);
+
+        return Double.parseDouble(formatter.format(averageRating));
     }
 
     private Set<String> getActorSet(MediaDto mediaDto) {
